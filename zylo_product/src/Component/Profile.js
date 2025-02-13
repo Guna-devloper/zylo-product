@@ -1,39 +1,28 @@
-import React, { useEffect, useState } from 'react';
-
-// Profile.js
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import app from '../firebase/firebaseConfig'; // Adjusted path
+import React, { useState } from "react";
+import { storage } from "../firebase/firebaseConfig"; // ✅ Import Firebase Storage
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useAuth } from "../Component/AuthContext";
 
 const Profile = () => {
-  const [user, setUser] = useState(null);
-  const auth = getAuth(app); // Initialize auth here
+  const { currentUser } = useAuth();
+  const [image, setImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-    });
-    return () => unsubscribe();
-  }, [auth]);
+  const handleUpload = async () => {
+    if (!image) return;
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      alert("Logged out successfully");
-    } catch (error) {
-      console.error(error.message);
-    }
+    const storageRef = ref(storage, `profile_pictures/${currentUser.uid}`);
+    await uploadBytes(storageRef, image);
+    const url = await getDownloadURL(storageRef);
+    setImageUrl(url);
   };
 
   return (
-    <div>
-      {user ? (
-        <div>
-          <h2>Welcome, {user.email}</h2>
-          <button onClick={handleLogout}>Log Out</button>
-        </div>
-      ) : (
-        <p>Please log in to view your profile</p>
-      )}
+    <div className="profile">
+      <h2>Profile</h2>
+      <input type="file" onChange={(e) => setImage(e.target.files[0])} />
+      <button onClick={handleUpload}>Upload</button>
+      {imageUrl && <img src={imageUrl} alt="Profile" />}
     </div>
   );
 };

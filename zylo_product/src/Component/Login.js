@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { Container, TextField, Button, Typography, Paper, Alert } from '@mui/material';
-import app from '../firebase/firebaseConfig';
+import { Container, TextField, Button, Typography, Paper } from '@mui/material';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
+import { app, auth, db, storage } from '../firebase/firebaseConfig';
 import './Login.css';
 import { Link } from 'react-router-dom';
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
   const auth = getAuth(app);
 
   const handleSubmit = async (e) => {
@@ -17,10 +18,14 @@ const Login = () => {
     setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      toast.success('Login Successful! Redirecting...', { autoClose: 1000 }); // Success Notification
       console.log('User signed in:', userCredential.user);
-      // Redirect to dashboard or home page after successful sign-in
+      // Redirect to dashboard or home page after a delay
+      setTimeout(() => {
+        window.location.href = '/dashboard'; // Change this to your actual dashboard route
+      }, 2000);
     } catch (error) {
-      setError('Error signing in: ' + error.message);
+      toast.error(`Login Failed: ${error.message}`, { autoClose: 2000 }); // Error Notification
       console.error('Error signing in:', error);
     } finally {
       setLoading(false);
@@ -29,6 +34,7 @@ const Login = () => {
 
   return (
     <div className="login-root">
+      <ToastContainer position="top-right" /> {/* React Toastify Toaster */}
       <Container className="login-container">
         {/* Left Side */}
         <div className="login-left">
@@ -85,26 +91,26 @@ const Login = () => {
               </Button>
             </form>
 
-            {error && (
-              <Alert severity="error" className="login-alert">
-                {error}
-              </Alert>
-            )}
-
+           
+            <Typography variant="body2" className="login-connect-text">
+            Dont't have an account??     <Link to="/signup">
+            <p>SignUp</p>
+              </Link>
+            </Typography>
             <Typography variant="body2" className="login-connect-text">
               — Connect With Us —
             </Typography>
             <div className="login-social-icons">
-  <Link to="/linkedin">
-    <img src="./linkedin-icon.png" alt="LinkedIn" />
-  </Link>
-  <Link to="/youtube">
-    <img src="./youtube-icon.png" alt="YouTube" />
-  </Link>
-  <Link to="/instagram">
-    <img src="./instagram-icon.png" alt="Instagram" />
-  </Link>
-</div>
+              <Link to="/linkedin">
+                <img src="./linkedin-icon.png" alt="LinkedIn" />
+              </Link>
+              <Link to="/youtube">
+                <img src="./youtube-icon.png" alt="YouTube" />
+              </Link>
+              <Link to="/instagram">
+                <img src="./instagram-icon.png" alt="Instagram" />
+              </Link>
+            </div>
           </Paper>
         </div>
       </Container>
